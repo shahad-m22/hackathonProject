@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NABAH | Add Machine</title>
+  <style>
+    body {
+      background-color: #0b1623;
+      color: white;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      padding: 20px 40px;
+      border-bottom: 1px solid #1e2a38;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .back-btn {
+      background-color: transparent;
+      border: 1px solid #2563eb;
+      color: #2563eb;
+      border-radius: 6px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .back-btn:hover {
+      background-color: #2563eb;
+      color: white;
+    }
+
+    main {
+      padding: 40px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #1e2a38;
+      background-color: #0f1b2d;
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    textarea {
+      resize: none;
+      height: 80px;
+    }
+
+    button.save-btn {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      background-color: #2563eb;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button.save-btn:hover {
+      background-color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>Add Machine</h2>
+    <button class="back-btn" onclick="location.href='main.html'">← Back</button>
+  </header>
+
+  <main>
+    <h1>New Machine Information</h1>
+
+    <form>
+      <label for="machineName">Machine Name</label>
+      <input type="text" id="machineName" placeholder="Enter machine name" />
+
+      <label for="machineType">Machine Type</label>
+      <input type="text" id="machineType" placeholder="Enter type" />
+
+      <label for="location">Location</label>
+      <input type="text" id="location" placeholder="Enter location" />
+
+      <label for="status">Status</label>
+      <select id="status">
+        <option>Active</option>
+        <option>Maintenance</option>
+        <option>Offline</option>
+      </select>
+
+      <label for="description">Description</label>
+      <textarea id="description" placeholder="Enter brief description"></textarea>
+
+      <button type="button" class="save-btn">Save Machine</button>
+    </form>
+  </main>
+</body>
+</html>
