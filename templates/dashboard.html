@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nibbah</title>
+  <style>
+    /* Your teammate's beautiful CSS */
+    body {
+      background-color: #0b1623;
+      color: white;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      border-bottom: 1px solid #1e2a38;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    header p {
+      color: #a0aec0;
+      font-size: 0.9rem;
+      margin-top: 5px;
+    }
+
+    .add-btn {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: 0.3s;
+    }
+
+    .add-btn:hover {
+      background-color: #1d4ed8;
+    }
+
+    main {
+      padding: 30px 40px;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      color: #94a3b8;
+    }
+
+    /* Overview Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background-color: #142235;
+      border-radius: 10px;
+      padding: 20px;
+      border: 1px solid #1e2a38;
+    }
+
+    .metric-label {
+      font-size: 0.9rem;
+      color: #a0aec0;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .metric-value {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    /* Risk colors */
+    .high-risk { border-left: 4px solid #e74c3c; }
+    .medium-risk { border-left: 4px solid #f39c12; }
+    .low-risk { border-left: 4px solid #27ae60; }
+
+    /* Machine cards */
+    .machine-card {
+      background-color: #142235;
+      border-radius: 10px;
+      padding: 20px;
+      border: 1px solid #1e2a38;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .machine-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .machine-name {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .machine-details {
+      font-size: 0.85rem;
+      color: #a0aec0;
+    }
+
+    .risk-badge {
+      float: right;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .risk-high { background: #e74c3c; }
+    .risk-medium { background: #f39c12; }
+    .risk-low { background: #27ae60; }
+
+    .demo-banner {
+      background: #1e3a8a;
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>Nibbah</h1>
+      <p>Real-time factory health monitoring & predictive analytics</p>
+    </div>
+    <div>
+      <span style="margin-right: 15px; color: #a0aec0;">Welcome, User {{ session.user_id }}</span>
+      <button class="add-btn" onclick="location.href='/add-machine'">+ Add Machine</button>
+      <button class="add-btn" onclick="location.href='/logout'" style="background: #64748b; margin-left: 10px;">Logout</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Demo Banner -->
+    <div class="demo-banner">
+      🎯 Demo Mode - Showing risk levels as of <strong>{{ demo_date.strftime('%B %d, %Y') }}</strong>
+    </div>
+
+    <!-- Overview -->
+    <h2>Overview</h2>
+    <div class="grid">
+      <div class="card">
+        <span class="metric-label">Total Machines</span>
+        <span class="metric-value">{{ total_machines }}</span>
+      </div>
+      <div class="card high-risk">
+        <span class="metric-label">Critical Alerts</span>
+        <span class="metric-value">{{ high_risk_count }}</span>
+      </div>
+      <div class="card medium-risk">
+        <span class="metric-label">Warning Status</span>
+        <span class="metric-value">{{ medium_risk_count }}</span>
+      </div>
+      <div class="card">
+        <span class="metric-label">Total Risk Exposure</span>
+        <span class="metric-value">SAR {{ "{:,.0f}".format(total_risk_exposure) }}</span>
+      </div>
+    </div>
+
+    <!-- Risk Heatmap -->
+    <h2>Risk Heatmap</h2>
+    <div class="grid">
+      {% for machine in machines %}
+      <a href="/machine/{{ machine.machine_id }}" style="text-decoration: none; color: inherit;">
+        <div class="machine-card {{ machine.risk_class }}">
+          <span class="machine-name">{{ machine.risk_icon }} {{ machine.machine_name }}</span>
+          <span class="risk-badge risk-{{ machine.risk_level|lower }}">{{ machine.risk_level }}</span>
+          <div class="machine-details">
+            Criticality: {{ machine.criticality }}/10<br>
+            Next Service: {{ machine.next_maintenance.strftime('%Y-%m-%d') }}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </main>
+</body>
+</html>

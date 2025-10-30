@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error - Nibbah</title>
+  <style>
+    body {
+      background-color: #0b1623;
+      color: white;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    .error-container {
+      background: #142235;
+      padding: 40px;
+      border-radius: 10px;
+      border: 1px solid #e74c3c;
+      max-width: 500px;
+    }
+    .back-btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 20px;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .logo {
+      color: #3b82f6;
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="error-container">
+    <div class="logo">Nibbah</div>
+    <h1>⚠️ Oops! Something went wrong</h1>
+    <p style="color: #a0aec0; margin: 20px 0;">{{ error }}</p>
+    <a href="/dashboard" class="back-btn">Back to Dashboard</a>
+    <a href="/login" class="back-btn" style="background: #64748b; margin-left: 10px;">Back to Login</a>
+  </div>
+</body>
+</html>
