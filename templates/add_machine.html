@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NIBBAH | Add Machine</title>
+  <title>NABEH | Add Machine</title>
   <style>
     body {
       background-color: #0b1623;
@@ -29,6 +29,8 @@
       padding: 8px 16px;
       cursor: pointer;
       transition: 0.3s;
+      text-decoration: none;
+      display: inline-block;
     }
 
     .back-btn:hover {
@@ -47,33 +49,49 @@
       margin-bottom: 30px;
     }
 
+    .form-group {
+      margin-bottom: 20px;
+    }
+
     label {
       display: block;
-      margin-top: 15px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       font-weight: 600;
       font-size: 0.95rem;
     }
 
-    input, select, textarea {
+    input, select {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border-radius: 8px;
       border: 1px solid #1e2a38;
       background-color: #0f1b2d;
       color: white;
       font-size: 0.9rem;
+      box-sizing: border-box;
     }
 
-    textarea {
-      resize: none;
-      height: 80px;
+    input:focus, select:focus {
+      border-color: #2563eb;
+      outline: none;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .form-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
 
     button.save-btn {
       margin-top: 25px;
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       background-color: #2563eb;
       border: none;
       border-radius: 8px;
@@ -87,39 +105,140 @@
     button.save-btn:hover {
       background-color: #1d4ed8;
     }
+
+    .success-message {
+      background: #27ae60;
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      text-align: center;
+      border: 1px solid #2ecc71;
+    }
+
+    .error-message {
+      background: #e74c3c;
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      text-align: center;
+      border: 1px solid #c0392b;
+    }
+
+    .form-section {
+      background: #142235;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #1e2a38;
+      margin-bottom: 25px;
+    }
+
+    .form-section h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #3b82f6;
+      font-size: 1.1rem;
+    }
   </style>
 </head>
 <body>
   <header>
     <h2>Add Machine</h2>
-    <button class="back-btn" onclick="location.href='main.html'">← Back</button>
+    <a href="/dashboard" class="back-btn">← Back to Dashboard</a>
   </header>
 
   <main>
-    <h1>New Machine Information</h1>
+    <h1>Register New Machine</h1>
 
-    <form>
-      <label for="machineName">Machine Name</label>
-      <input type="text" id="machineName" placeholder="Enter machine name" />
+    {% if success %}
+    <div class="success-message">✅{{ success }}</div>
+    {% endif %}
 
-      <label for="machineType">Machine Type</label>
-      <input type="text" id="machineType" placeholder="Enter type" />
+    {% if error %}
+    <div class="error-message">❌{{ error }}</div>
+    {% endif %}
 
-      <label for="location">Location</label>
-      <input type="text" id="location" placeholder="Enter location" />
+    <form action="/add-machine" method="post">
+     
+      <div class="form-section">
+        <h3>Basic Information</h3>
+        <div class="form-group">
+          <label for="machine_name">Machine Name</label>
+          <input type="text" id="machine_name" name="machine_name" placeholder="e.g., Compressor A-1" required />
+        </div>
 
-      <label for="status">Status</label>
-      <select id="status">
-        <option>Active</option>
-        <option>Maintenance</option>
-        <option>Offline</option>
-      </select>
+        <div class="form-row">
+          <div class="form-column">
+            <label for="criticality">Criticality Level</label>
+            <select id="criticality" name="criticality" required>
+              <option value="">Select criticality</option>
+              <option value="10">10 - Factory Stops</option>
+              <option value="9">9 - Production Line Stops</option>
+              <option value="8">8 - Major Delays</option>
+              <option value="7">7 - Significant Slowdown</option>
+              <option value="6">6 - Noticeable Impact</option>
+              <option value="5">5 - Minor Slowdown</option>
+              <option value="4">4 - Small Delays</option>
+              <option value="3">3 - Minimal Impact</option>
+              <option value="2">2 - Barely Noticeable</option>
+              <option value="1">1 - No Production Impact</option>
+          </select>
+          </div>
+         
+          <div class="form-column">
+            <label for="life_time_years">Lifetime (Years)</label>
+            <input type="number" id="life_time_years" name="life_time_years" placeholder="e.g., 15" min="1" max="50" required />
+          </div>
+        </div>
+      </div>
 
-      <label for="description">Description</label>
-      <textarea id="description" placeholder="Enter brief description"></textarea>
+      <div class="form-section">
+        <h3>Cost Information</h3>
+        <div class="form-row">
+          <div class="form-column">
+            <label for="hourly_downtime_cost">Hourly Downtime Cost (SAR)</label>
+            <input type="number" id="hourly_downtime_cost" name="hourly_downtime_cost" placeholder="e.g., 18000" step="0.01" min="0" required />
+          </div>
+         
+          <div class="form-column">
+            <label for="total_maintenance_cost">Maintenance Cost (SAR)</label>
+            <input type="number" id="total_maintenance_cost" name="total_maintenance_cost" placeholder="e.g., 296000" step="0.01" min="0" required />
+          </div>
+        </div>
+      </div>
 
-      <button type="button" class="save-btn">Save Machine</button>
-    </form>
-  </main>
-</body>
+      <div class="form-section">
+        <h3>Maintenance Schedule</h3>
+        <div class="form-row">
+          <div class="form-column">
+            <label for="last_maintenance">Last Maintenance Date</label>
+            <input type="date" id="last_maintenance" name="last_maintenance" required />
+          </div>
+         
+          <div class="form-column">
+            <label for="next_maintenance">Next Maintenance Date</label>
+            <input type="date" id="next_maintenance" name="next_maintenance" required />
+          </div>
+        </div>
+      </div>
+
+
+        <button type="submit" class="save-btn">Add Machine to Database</button>
+      </form>
+    </main>
+
+    <script>
+      // Set default dates for easier testing
+      document.getElementById("last_maintenance").value = new Date().toISOString().split("T")[0];
+
+      // Set next maintenance to 30 days from now
+      const nextDate = new Date();
+      nextDate.setDate(nextDate.getDate() + 30);
+      document.getElementById("next_maintenance").value = nextDate.toISOString().split("T")[0];
+
+      // Set default criticality to medium
+      document.getElementById('criticality').value = '6';
+    </script>
+  </body>
 </html>

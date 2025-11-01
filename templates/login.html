@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NIBBAH | Login</title>
+  <title>NABAH | Login</title>
   <style>
     body {
       background-color: #0b1623;
@@ -113,17 +113,12 @@
     <p>Sign in to access the factory dashboard</p>
 
     {% if error %}
-    <div class="error-message">
-      {{ error }}
-    </div>
+    <div class="error-message">{{ error }}</div>
     {% endif %}
 
     <form action="/login" method="post">
       <label for="userID">User ID</label>
       <input type="text" id="userID" name="userID" placeholder="Enter your ID" required />
-
-      <label for="email">Email</label>
-      <input type="email" id="email" name="email" placeholder="Enter your email" required />
 
       <label for="password">Password</label>
       <input type="password" id="password" name="password" placeholder="Enter your password" required />
