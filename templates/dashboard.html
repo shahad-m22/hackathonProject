@@ -134,13 +134,104 @@
       text-align: center;
       font-size: 0.9rem;
     }
+
+      .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    /* Priority-based ordering in CSS */
+    .heatmap-grid .high-risk { order: 1; }
+    .heatmap-grid .medium-risk { order: 2; }
+    .heatmap-grid .low-risk { order: 3; }
+
+    .machine-card {
+      background-color: #142235;
+      border-radius: 10px;
+      padding: 20px;
+      border: 1px solid #1e2a38;
+      cursor: pointer;
+      transition: transform 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .machine-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .machine-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .machine-name {
+      font-weight: 600;
+      font-size: 1rem;
+      flex: 1;
+    }
+
+    .risk-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .risk-high {
+      background: #e74c3c;
+      color: white;
+    }
+    .risk-medium {
+      background: #f39c12;
+      color: white;
+    }
+    .risk-low {
+      background: #27ae60;
+      color: white;
+    }
+
+    .machine-details {
+      font-size: 0.85rem;
+      color: #a0aec0;
+      line-height: 1.4;
+    }
+
+    .days-indicator {
+      font-size: 0.8rem;
+      margin-top: 8px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .days-overdue {
+      background: #c0392b;
+      color: white;
+    }
+
+    .days-warning {
+      background: #d35400;
+      color: white;
+    }
+
+    .days-ok {
+      background: #27ae60;
+      color: white;
+    }
   </style>
 </head>
 <body>
 
   <header>
     <div>
-      <h1>Nibbah</h1>
+      <h1>Nabeh</h1>
       <p>Real-time factory health monitoring & predictive analytics</p>
     </div>
     <div>
@@ -171,6 +262,10 @@
         <span class="metric-label">Warning Status</span>
         <span class="metric-value">{{ medium_risk_count }}</span>
       </div>
+      <div class="card low-risk">
+        <span class="metric-label">Optimal Status</span>
+        <span class="metric-value">{{ low_risk_count }}</span>
+      </div>
       <div class="card">
         <span class="metric-label">Total Risk Exposure</span>
         <span class="metric-value">SAR {{ "{:,.0f}".format(total_risk_exposure) }}</span>
@@ -179,20 +274,49 @@
 
     <!-- Risk Heatmap -->
     <h2>Risk Heatmap</h2>
-    <div class="grid">
+    <div class="heatmap-grid">
       {% for machine in machines %}
       <a href="/machine/{{ machine.machine_id }}" style="text-decoration: none; color: inherit;">
         <div class="machine-card {{ machine.risk_class }}">
-          <span class="machine-name">{{ machine.risk_icon }} {{ machine.machine_name }}</span>
-          <span class="risk-badge risk-{{ machine.risk_level|lower }}">{{ machine.risk_level }}</span>
+          <div class="machine-header">
+            <span class="machine-name">{{ machine.risk_icon }} {{ machine.machine_name }}</span>
+            <span class="risk-badge risk-{{ machine.risk_level|lower }}">{{ machine.risk_level }}</span>
+          </div>
           <div class="machine-details">
             Criticality: {{ machine.criticality }}/10<br>
-            Next Service: {{ machine.next_maintenance.strftime('%Y-%m-%d') }}
+            Next Service: {{ machine.next_maintenance.strftime('%Y-%m-%d') }}<br>
+            {% set days_diff = (machine.next_maintenance - demo_date).days %}
+            {% if days_diff < 0 %}
+              <span class="days-indicator days-overdue">{{ -days_diff }} days overdue</span>
+            {% elif days_diff <= 7 %}
+              <span class="days-indicator days-warning">Due in {{ days_diff }} days</span>
+            {% else %}
+              <span class="days-indicator days-ok">Due in {{ days_diff }} days</span>
+            {% endif %}
           </div>
         </div>
       </a>
       {% endfor %}
     </div>
   </main>
+
+  <script>
+    // Sort machines by risk priority (High -> Medium -> Low)
+    document.addEventListener('DOMContentLoaded', function() {
+      const grid = document.querySelector('.heatmap-grid');
+      if (grid) {
+        const cards = Array.from(grid.children);
+        cards.sort((a, b) => {
+          const getPriority = (card) => {
+            if (card.querySelector('.high-risk')) return 1;
+            if (card.querySelector('.medium-risk')) return 2;
+            return 3;
+          };
+          return getPriority(a) - getPriority(b);
+        });
+        cards.forEach(card => grid.appendChild(card));
+      }
+    });
+  </script>
 </body>
 </html>

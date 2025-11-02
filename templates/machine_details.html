@@ -102,6 +102,19 @@
       margin: 20px 0;
       text-align: center;
     }
+
+    .optimal-banner {
+      background: #27ae60;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .status-critical { color: #e74c3c; }
+    .status-warning { color: #f39c12; }
+    .status-optimal { color: #27ae60; }
+    .status-overdue { color: #c0392b; }
   </style>
 </head>
 <body>
@@ -135,12 +148,34 @@
       </div>
     </div>
 
-    {% if machine.risk_level == 'High' %}
+    <!-- Dynamic Status Banner Based on Actual Maintenance Status -->
+    {% if machine.maintenance_status == 'Overdue' %}
     <div class="alert-banner">
-      <h3>Immediate Attention Required</h3>
-      <p>This machine is {{ days_overdue }} days overdue for maintenance!</p>
+      <h3>🚨 IMMEDIATE ATTENTION REQUIRED</h3>
+      <p>This machine is {{ -machine.days_until_service }} days overdue for maintenance!</p>
+      <p><strong>Financial Impact:</strong> SAR {{ "{:,.0f}".format(total_potential_loss) }}</p>
     </div>
 
+    {% elif machine.maintenance_status == 'Critical' %}
+    <div class="alert-banner">
+      <h3>⚠️ URGENT MAINTENANCE REQUIRED</h3>
+      <p>This machine needs maintenance in {{ machine.days_until_service }} days!</p>
+    </div>
+
+    {% elif machine.maintenance_status == 'Warning' %}
+    <div class="warning-banner">
+      <h3>🔧 MAINTENANCE DUE SOON</h3>
+      <p>This machine is due for maintenance in {{ machine.days_until_service }} days</p>
+    </div>
+
+    {% else %}
+    <div class="optimal-banner">
+      <h3>✅ MAINTENANCE STATUS: OPTIMAL</h3>
+      <p>This machine is properly maintained and scheduled for service in {{ machine.days_until_service }} days.</p>
+    </div>
+    {% endif %}
+
+    <!-- Financial Impact Section -->
     <div class="card">
       <h3>Financial Impact Analysis</h3>
       <div class="info-grid">
@@ -151,6 +186,11 @@
         <div class="info-item">
           <span class="info-label">Maintenance Cost</span>
           <span class="info-value">SAR {{ "{:,.0f}".format(machine.total_maintenance_cost) }}</span>
+        </div>
+        {% if machine.days_until_service < 0 %}
+        <div class="info-item">
+          <span class="info-label">Days Overdue</span>
+          <span class="info-value status-overdue">{{ -machine.days_until_service }} days</span>
         </div>
         <div class="info-item">
           <span class="info-label">Estimated Downtime Cost</span>
@@ -160,78 +200,22 @@
           <span class="info-label">Total Potential Loss</span>
           <span class="info-value">SAR {{ "{:,.0f}".format(total_potential_loss) }}</span>
         </div>
-      </div>
-    </div>
-
-    {% elif machine.risk_level == 'Medium' %}
-    {% set days_until_due = (machine.next_maintenance - demo_date).days %}
-
-    <div class="warning-banner">
-      <h3>
-        {% if days_until_due <= 2 %}Urgent Attention Required
-        {% elif days_until_due <= 5 %}Planning Required
-        {% else %}Upcoming Maintenance
+        {% else %}
+        <div class="info-item">
+          <span class="info-label">Days Until Service</span>
+          <span class="info-value {% if machine.days_until_service <= 7 %}status-warning{% else %}status-optimal{% endif %}">
+            {{ machine.days_until_service }} days
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Maintenance Status</span>
+          <span class="info-value status-{{ machine.status_class }}">{{ machine.maintenance_status }}</span>
+        </div>
         {% endif %}
-      </h3>
-      <p>This machine is due for maintenance in <strong>{{ days_until_due }} days</strong> ({{ machine.next_maintenance.strftime('%B %d, %Y') }})</p>
-    </div>
-
-    <div class="card">
-      <h3>Financial Impact Analysis</h3>
-      <div class="info-grid">
-        <div class="info-item">
-          <span class="info-label">Hourly Downtime Cost</span>
-          <span class="info-value">SAR {{ "{:,.0f}".format(machine.hourly_downtime_cost) }}</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Maintenance Cost</span>
-          <span class="info-value">SAR {{ "{:,.0f}".format(machine.total_maintenance_cost) }}</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Days Until Due</span>
-          <span class="info-value">{{ days_until_due }} days</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Priority Level</span>
-          <span class="info-value">
-            {% if days_until_due <= 2 %}
-              HIGH PRIORITY
-            {% elif days_until_due <= 5 %}
-              MEDIUM PRIORITY
-            {% else %}
-              STANDARD PRIORITY
-            {% endif %}
-          </span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Recommended Timeline</span>
-          <span class="info-value">
-            {% if days_until_due == 1 %}
-              Schedule TOMORROW
-            {% elif days_until_due == 2 %}
-              Schedule within 48 hours
-            {% elif days_until_due <= 4 %}
-              Schedule by end of week
-            {% elif days_until_due <= 7 %}
-              Schedule within 7 days
-            {% else %}
-              Schedule within 2 weeks
-            {% endif %}
-          </span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Potential Loss if Delayed</span>
-          <span class="info-value">SAR {{ "{:,.0f}".format(machine.hourly_downtime_cost * 8 * days_until_due) }}</span>
-        </div>
       </div>
     </div>
 
-    {% elif machine.risk_level == 'Low' %}
-    <div class="info-banner">
-      <h3>Maintenance Status: Optimal</h3>
-      <p>This machine is properly maintained and scheduled for service in {{ (machine.next_maintenance - demo_date).days }} days.</p>
-    </div>
-
+    <!-- Maintenance Overview -->
     <div class="card">
       <h3>Maintenance Overview</h3>
       <div class="info-grid">
@@ -241,19 +225,34 @@
         </div>
         <div class="info-item">
           <span class="info-label">Days Until Service</span>
-          <span class="info-value">{{ (machine.next_maintenance - demo_date).days }} days</span>
+          <span class="info-value {% if machine.days_until_service < 0 %}status-overdue{% elif machine.days_until_service <= 7 %}status-warning{% else %}status-optimal{% endif %}">
+            {% if machine.days_until_service < 0 %}
+              {{ -machine.days_until_service }} days overdue
+            {% else %}
+              {{ machine.days_until_service }} days
+            {% endif %}
+          </span>
         </div>
         <div class="info-item">
           <span class="info-label">Maintenance Status</span>
-          <span class="info-value">On Schedule</span>
+          <span class="info-value status-{{ machine.status_class }}">{{ machine.maintenance_status }}</span>
         </div>
         <div class="info-item">
           <span class="info-label">Recommended Action</span>
-          <span class="info-value">Continue regular monitoring</span>
+          <span class="info-value">
+            {% if machine.days_until_service < 0 %}
+              Schedule immediate maintenance
+            {% elif machine.days_until_service <= 3 %}
+              Schedule maintenance within 48 hours
+            {% elif machine.days_until_service <= 7 %}
+              Schedule maintenance this week
+            {% else %}
+              Continue regular monitoring
+            {% endif %}
+          </span>
         </div>
       </div>
     </div>
-    {% endif %}
 
     {% else %}
     <div class="card">

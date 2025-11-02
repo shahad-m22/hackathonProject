@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 import mysql.connector
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import math
 
 app = Flask(__name__)
@@ -26,12 +26,34 @@ def calculate_risk_level(next_maintenance, reference_date=None):
 
     days_until_due = (next_maintenance - reference_date).days
 
-    if days_until_due <= 0:
+    if days_until_due < 0:
         return 'High', '🔴', 'high-risk'
     elif days_until_due <= 7:
         return 'Medium', '🟡', 'medium-risk'
     else:
         return 'Low', '🟢', 'low-risk'
+
+def calculate_maintenance_status(next_maintenance, last_maintenance, reference_date=None):
+    if reference_date is None:
+        reference_date = date.today()
+
+    if isinstance(next_maintenance, str):
+        next_maintenance = datetime.strptime(next_maintenance, '%Y-%m-%d').date()
+    if isinstance(last_maintenance, str):
+        last_maintenance = datetime.strptime(last_maintenance, '%Y-%m-%d').date()
+
+    days_until_due = (next_maintenance - reference_date).days
+   
+    if days_until_due < 0:
+        return 'Overdue', 'This machine is overdue for maintenance!', 'immediate'
+    elif days_until_due <= 3:
+        return 'Critical', 'Urgent maintenance required!', 'urgent'
+    elif days_until_due <= 7:
+        return 'Warning', 'Maintenance due soon', 'warning'
+    elif days_until_due <= 30:
+        return 'Optimal', 'This machine is properly maintained', 'optimal'
+    else:
+        return 'Optimal', 'This machine is properly maintained', 'optimal'
 
 def calculate_financial_impact(machine, reference_date=None):
     if reference_date is None:
@@ -44,7 +66,7 @@ def calculate_financial_impact(machine, reference_date=None):
 
     days_overdue = (reference_date - next_maintenance).days
     if days_overdue > 0:
-        estimated_downtime_cost = machine['hourly_downtime_cost'] * 8
+        estimated_downtime_cost = machine['hourly_downtime_cost'] * 8 * days_overdue
         total_potential_loss = estimated_downtime_cost + machine['total_maintenance_cost']
         return total_potential_loss, estimated_downtime_cost, days_overdue
     return 0, 0, 0
@@ -60,7 +82,7 @@ def login():
     if request.method == 'POST':
         user_id = request.form['userID']
         password = request.form['password']
-        
+       
         try:
             conn = get_db_connection()
             cursor = conn.cursor(dictionary=True)
@@ -68,14 +90,14 @@ def login():
             user = cursor.fetchone()
             cursor.close()
             conn.close()
-        
+       
             if user:
                 session['user_id'] = user_id
                 session['user_name'] = f"User {user_id}"
                 return redirect(url_for('dashboard'))
             else:
                 return render_template('login.html', error="Invalid User ID. Please try again.")
-                
+               
         except Exception as e:
             return render_template('login.html', error="Database error. Please try again.")
 
@@ -85,11 +107,11 @@ def login():
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+   
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        
+       
         cursor.execute("SELECT * FROM machines")
         machines = cursor.fetchall()
 
@@ -97,6 +119,7 @@ def dashboard():
 
         high_risk_count = 0
         medium_risk_count = 0
+        low_risk_count = 0
         total_risk_exposure = 0
 
         for machine in machines:
@@ -111,18 +134,21 @@ def dashboard():
                 total_risk_exposure += total_potential_loss
             elif risk_level == 'Medium':
                 medium_risk_count += 1
+            else:
+                low_risk_count += 1
 
         cursor.execute("SELECT COUNT(*) as total_machines FROM machines")
         total_machines = cursor.fetchone()['total_machines']
 
         cursor.close()
         conn.close()
-        
+       
         return render_template('dashboard.html',
                              machines=machines,
                              total_machines=total_machines,
                              high_risk_count=high_risk_count,
                              medium_risk_count=medium_risk_count,
+                             low_risk_count=low_risk_count,
                              total_risk_exposure=total_risk_exposure,
                              demo_date=demo_date)
 
@@ -141,13 +167,23 @@ def machine_details(machine_id):
         cursor.execute("SELECT * FROM machines WHERE machine_id = %s", (machine_id,))
         machine = cursor.fetchone()
 
-        demo_date = date(2024, 11, 11)
-        
+        demo_date = date(2025, 11, 11)
+       
         if machine:
             risk_level, risk_icon, risk_class = calculate_risk_level(machine['next_maintenance'], demo_date)
+            maintenance_status, status_message, status_class = calculate_maintenance_status(
+                machine['next_maintenance'], machine['last_maintenance'], demo_date
+            )
+           
             machine['risk_level'] = risk_level
             machine['risk_icon'] = risk_icon
             machine['risk_class'] = risk_class
+            machine['maintenance_status'] = maintenance_status
+            machine['status_message'] = status_message
+            machine['status_class'] = status_class
+
+            days_until_service = (machine['next_maintenance'] - demo_date).days
+            machine['days_until_service'] = days_until_service
 
             total_potential_loss, downtime_cost, days_overdue = calculate_financial_impact(machine, demo_date)
         else:
@@ -183,9 +219,9 @@ def add_machine():
 
             conn = get_db_connection()
             cursor = conn.cursor()
-            
+           
             insert_query = """
-                INSERT INTO machines 
+                INSERT INTO machines
                 (machine_name, criticality, hourly_downtime_cost, total_maintenance_cost,
                  last_maintenance, next_maintenance, life_time_years)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -200,7 +236,7 @@ def add_machine():
             cursor.close()
             conn.close()
 
-            return render_template('add_machine.html', 
+            return render_template('add_machine.html',
                                  success=f"Machine '{machine_name}' added successfully to database!")
 
         except Exception as e:
