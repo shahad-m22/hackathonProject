@@ -9,19 +9,21 @@ def seed_database():
             'host': 'localhost',
             'user': 'root',
             'password': 'root2003',
-            'database': 'nibbah_factory'
+            'database': 'nabeh_factory'
         }
        
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
        
         # Clear existing data
+        cursor.execute("DELETE FROM notification_logs")
+        cursor.execute("DELETE FROM machine_states")
         cursor.execute("DELETE FROM machines")
        
         # Judging date: November 11, 2025
         judging_date = datetime(2025, 11, 11).date()
        
-        # YOUR EXACT CSV DATES - converted from dd/mm/yy to yyyy-mm-dd
+        # YOUR EXACT CSV DATES
         machines_data = [
             ('Compressor A-1', 8, 18000.00, 296000.00, '2025-08-01', '2025-11-25', 15),
             ('Crude/Product Pump A-2', 8, 23000.00, 460000.00, '2025-07-10', '2025-11-28', 12),
@@ -49,6 +51,25 @@ def seed_database():
         """
        
         cursor.executemany(insert_query, machines_data)
+       
+        # Seed initial machine states
+        cursor.execute("""
+            INSERT INTO machine_states (machine_id, risk_state, last_notification_sent, notification_count)
+            SELECT machine_id, 'Low', NULL, 0 FROM machines
+        """)
+       
+        # Add some sample notification logs for demo
+        sample_notifications = [
+            ('technicians@nabehfactory.com', '⚠️ REMINDER: Compressor A-1 Maintenance Due Soon', 'Compressor A-1', 'medium_risk', 'sent'),
+            ('maintenance@nabehfactory.com', '🚨 CRITICAL: Filter/Separator A-12 MAINTENANCE OVERDUE!', 'Filter/Separator A-12', 'high_risk', 'sent'),
+            ('operations@nabehfactory.com', '📊 Daily Maintenance Report - 2025-11-10', 'System', 'daily_report', 'sent')
+        ]
+
+        cursor.executemany("""
+            INSERT INTO notification_logs (recipient, subject, machine_name, alert_type, status, sent_at)
+            VALUES (%s, %s, %s, %s, %s, NOW() - INTERVAL FLOOR(RAND() * 24) HOUR)
+        """, sample_notifications)
+       
         conn.commit()
        
         print(f"✅ Successfully seeded {len(machines_data)} machines with EXACT CSV dates")

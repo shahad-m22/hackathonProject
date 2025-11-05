@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NABAH | Dashboard</title>
+  <title>Nabeh | Dashboard</title>
   <style>
     body {
       background-color: #0b1623;
@@ -126,41 +126,12 @@
     .risk-medium { background: #f39c12; }
     .risk-low { background: #27ae60; }
 
-    .demo-banner {
-      background: #1e3a8a;
-      padding: 10px 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      text-align: center;
-      font-size: 0.9rem;
-    }
-
-      .heatmap-grid {
+    /* Enhanced Heatmap Grid */
+    .heatmap-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 15px;
       margin-bottom: 30px;
-    }
-
-    /* Priority-based ordering in CSS */
-    .heatmap-grid .high-risk { order: 1; }
-    .heatmap-grid .medium-risk { order: 2; }
-    .heatmap-grid .low-risk { order: 3; }
-
-    .machine-card {
-      background-color: #142235;
-      border-radius: 10px;
-      padding: 20px;
-      border: 1px solid #1e2a38;
-      cursor: pointer;
-      transition: transform 0.2s;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .machine-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
     .machine-header {
@@ -168,39 +139,6 @@
       justify-content: space-between;
       align-items: flex-start;
       margin-bottom: 10px;
-    }
-
-    .machine-name {
-      font-weight: 600;
-      font-size: 1rem;
-      flex: 1;
-    }
-
-    .risk-badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-left: 10px;
-    }
-
-    .risk-high {
-      background: #e74c3c;
-      color: white;
-    }
-    .risk-medium {
-      background: #f39c12;
-      color: white;
-    }
-    .risk-low {
-      background: #27ae60;
-      color: white;
-    }
-
-    .machine-details {
-      font-size: 0.85rem;
-      color: #a0aec0;
-      line-height: 1.4;
     }
 
     .days-indicator {
@@ -242,10 +180,6 @@
   </header>
 
   <main>
-    <!-- Demo Banner -->
-    <div class="demo-banner">
-      🎯 Demo Mode - Showing risk levels as of <strong>{{ demo_date.strftime('%B %d, %Y') }}</strong>
-    </div>
 
     <!-- Overview -->
     <h2>Overview</h2>

@@ -1,6 +1,6 @@
 -- Create the database
-CREATE DATABASE IF NOT EXISTS nibbah_factory;
-USE nibbah_factory;
+CREATE DATABASE IF NOT EXISTS nabeh_factory;
+USE nabeh_factory;
 
 -- Create users table
 CREATE TABLE users (
@@ -9,7 +9,7 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL
 );
 
--- Create machines table WITHOUT risk_level (we calculate it dynamically)
+-- Create machines table
 CREATE TABLE machines (
     machine_id INT AUTO_INCREMENT PRIMARY KEY,
     machine_name VARCHAR(100) NOT NULL,
@@ -21,10 +21,35 @@ CREATE TABLE machines (
     life_time_years INT
 );
 
--- Insert your user data
-INSERT INTO users (user_id, password_hash, email) VALUES 
-(11011, '11011-Qq', 'A11011@gmail.com'),
-(11022, '11022-Qq', 'B11022@gmail.com'),
-(11033, '11033-Qq', 'C11033@gmail.com'),
-(11044, '11044-Qq', 'D11044@gmail.com'),
-(11055, '11055-Qq', 'E11055@gmail.com');
+-- Create machine state tracking table
+CREATE TABLE machine_states (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    machine_id INT,
+    risk_state ENUM('Low', 'Medium', 'High'),
+    last_notification_sent DATE,
+    notification_count INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (machine_id) REFERENCES machines(machine_id) ON DELETE CASCADE
+);
+
+-- Add notification logs table
+CREATE TABLE IF NOT EXISTS notification_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    recipient VARCHAR(255),
+    subject TEXT,
+    machine_name VARCHAR(100),
+    alert_type VARCHAR(50),
+    status VARCHAR(50),
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert user data
+INSERT INTO users (user_id, password_hash, email) VALUES
+(11011, '11011-Qq', 'technician1@nabehfactory.com'),
+(11022, '11022-Qq', 'technician2@nabehfactory.com'),
+(11033, '11033-Qq', 'manager@nabehfactory.com'),
+(11044, '11044-Qq', 'maintenance@nabehfactory.com'),
+(11055, '11055-Qq', 'operations@nabehfactory.com');
+
+-- Create index for better performance
+CREATE INDEX idx_machine_states ON machine_states(machine_id, risk_state);
